@@ -25,6 +25,7 @@ class TelemetrySystem:
             with open(filepath, 'r') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    float_row = {key: float(value) for key, value in row.items()}
                     data.append(row)
         except FileNotFoundError:
             print("[WARNING] Mock telemetry file not found. Using static zeroes.")

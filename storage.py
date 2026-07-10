@@ -15,7 +15,13 @@ class DataLogger:
         if not os.path.exists(self.log_file):
             with open(self.log_file, mode='w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(["Timestamp", "Filename", "Lat", "Lon", "Alt", "Roll", "Pitch", "Yaw"])
+                # UPDATED HEADERS: Now includes both the Drone's location AND the Target's location
+                writer.writerow([
+                    "Timestamp", "Filename", 
+                    "Drone_Lat", "Drone_Lon", "Drone_Alt", 
+                    "Roll", "Pitch", "Yaw",
+                    "Target_Lat", "Target_Lon"
+                ])
 
     def save_detection(self, frame, timestamp, telemetry_data):
         # Format timestamp for filename
@@ -30,8 +36,15 @@ class DataLogger:
         with open(self.log_file, mode='a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow([
-                timestamp, filename, 
-                telemetry_data.get('lat', 0), telemetry_data.get('lon', 0), telemetry_data.get('alt', 0),
-                telemetry_data.get('roll', 0), telemetry_data.get('pitch', 0), telemetry_data.get('yaw', 0)
+                timestamp, 
+                filename, 
+                telemetry_data.get('lat', 0.0), 
+                telemetry_data.get('lon', 0.0), 
+                telemetry_data.get('alt', 0.0),
+                telemetry_data.get('roll', 0.0), 
+                telemetry_data.get('pitch', 0.0), 
+                telemetry_data.get('yaw', 0.0),
+                # Pull the calculated target coordinates we added in main.py
+                telemetry_data.get('target_lat', 0.0),
+                telemetry_data.get('target_lon', 0.0)
             ])
-        print(f"[LOG] Saved detection: {filename} at Lat/Lon: {telemetry_data.get('lat')}, {telemetry_data.get('lon')}")

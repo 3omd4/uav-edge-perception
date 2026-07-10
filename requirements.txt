@@ -1,0 +1,6 @@
+opencv-python
+numpy
+pymavlink
+pyserial
+filterpy
+scipy
