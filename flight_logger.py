@@ -21,15 +21,16 @@ def main():
             while True:
                 telem.update()
                 
-                # Get the absolute latest data directly from the buffer
-                with telem.lock:
-                    if not telem.data_buffer:
-                        continue
-                    latest_data = telem.data_buffer[-1]
+                # Fetch data directly from the history buffer
+                if not telem.history:
+                    continue
+                    
+                # history stores tuples of (timestamp, data_dict)
+                current_time, latest_data = telem.history[-1]
                 
                 # Save it with the Jetson's exact system time
                 writer.writerow([
-                    latest_data['timestamp'],
+                    current_time,
                     latest_data.get('lat', 0.0),
                     latest_data.get('lon', 0.0),
                     latest_data.get('alt', 0.0),
