@@ -6,7 +6,7 @@ class TelemetrySystem:
     def __init__(self, mode="LIVE", port="/dev/ttyTHS1", baud=57600):
         self.mode = mode
         self.history = [] # Stores (timestamp, data_dict)
-        self.max_history_len = 100 # Keep last 100 readings
+        self.max_history_len = 100 # Keep last 100 readings[cite: 4]
         
         if self.mode == "LIVE":
             print(f"Connecting to Pixhawk on {port}...")
@@ -19,7 +19,6 @@ class TelemetrySystem:
             self.mock_index = 0
 
     def _load_mock_data(self, filepath):
-        # Load a pre-recorded CSV for simulation
         data = []
         try:
             with open(filepath, 'r') as f:
@@ -37,7 +36,6 @@ class TelemetrySystem:
         data = {'lat': 0, 'lon': 0, 'alt': 0, 'roll': 0, 'pitch': 0, 'yaw': 0}
         
         if self.mode == "LIVE":
-            # Fetch latest MAVLink messages
             msg = self.master.recv_match(type=['GLOBAL_POSITION_INT', 'ATTITUDE'], blocking=False)
             if msg:
                 if msg.get_type() == 'GLOBAL_POSITION_INT':
@@ -49,12 +47,10 @@ class TelemetrySystem:
                     data['pitch'] = msg.pitch
                     data['yaw'] = msg.yaw
         else:
-            # Simulate fetching data
             if self.mock_data and self.mock_index < len(self.mock_data):
                 data = self.mock_data[self.mock_index]
                 self.mock_index += 1
 
-        # Store in rolling buffer
         self.history.append((current_time, data))
         if len(self.history) > self.max_history_len:
             self.history.pop(0)
@@ -64,6 +60,36 @@ class TelemetrySystem:
         if not self.history:
             return {'lat': 0, 'lon': 0, 'alt': 0, 'roll': 0, 'pitch': 0, 'yaw': 0}
             
-        # Find the telemetry entry closest to our target timestamp
         closest_entry = min(self.history, key=lambda x: abs(x[0] - target_timestamp))
         return closest_entry[1]
+
+
+class OfflineTelemetry:
+    """Handles loading and syncing CSV telemetry for post-flight video analysis"""
+    def __init__(self, csv_path):
+        self.data = []
+        print(f"Loading offline telemetry from {csv_path}...")
+        
+        with open(csv_path, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                self.data.append({
+                    'timestamp': float(row['timestamp']),
+                    'lat': float(row['lat']),
+                    'lon': float(row['lon']),
+                    'alt': float(row['alt']),
+                    'roll': float(row['roll']),
+                    'pitch': float(row['pitch']),
+                    'yaw': float(row['yaw'])
+                })[cite: 3]
+                
+        # Save the exact time the Jetson started logging
+        self.start_time = self.data[0]['timestamp'] if self.data else 0[cite: 3]
+        print(f"Loaded {len(self.data)} rows of flight data.")[cite: 3]
+
+    def get_data_at_time(self, target_time):
+        if not self.data:
+            return {}
+        # Finds the telemetry row that perfectly matches the video frame's time
+        closest_row = min(self.data, key=lambda x: abs(x['timestamp'] - target_time))[cite: 3]
+        return closest_row[cite: 3]
