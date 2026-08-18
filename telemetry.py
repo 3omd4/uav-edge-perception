@@ -81,15 +81,15 @@ class OfflineTelemetry:
                     'roll': float(row['roll']),
                     'pitch': float(row['pitch']),
                     'yaw': float(row['yaw'])
-                })[cite: 3]
+                })
                 
         # Save the exact time the Jetson started logging
-        self.start_time = self.data[0]['timestamp'] if self.data else 0[cite: 3]
-        print(f"Loaded {len(self.data)} rows of flight data.")[cite: 3]
+        self.start_time = self.data[0]['timestamp'] if self.data else 0
+        print(f"Loaded {len(self.data)} rows of flight data.")
 
     def get_data_at_time(self, target_time):
         if not self.data:
             return {}
         # Finds the telemetry row that perfectly matches the video frame's time
-        closest_row = min(self.data, key=lambda x: abs(x['timestamp'] - target_time))[cite: 3]
-        return closest_row[cite: 3]
+        closest_row = min(self.data, key=lambda x: abs(x['timestamp'] - target_time))
+        return closest_row
