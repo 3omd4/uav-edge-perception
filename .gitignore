@@ -1,4 +1,4 @@
 mock_data/
 data/
 __pycache__/
-Flag detection mission.rar
+*.rar
