@@ -30,8 +30,10 @@ def main():
     logged_targets = []
     
     # 1. Point to the files in your data folder
-    VIDEO_PATH = "data/flight_video.mp4"       
-    TELEMETRY_PATH = "data/raw_flight_telemetry.csv" 
+    # VIDEO_PATH = "data/flight_video.mp4"       
+    # TELEMETRY_PATH = "data/raw_flight_telemetry.csv" 
+    VIDEO_PATH = "mock_data/test_video2.mp4"
+    TELEMETRY_PATH = "mock_data/test_telemetry.csv"
     
     cap = cv2.VideoCapture(VIDEO_PATH)
     telem = OfflineTelemetry(TELEMETRY_PATH)
