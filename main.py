@@ -27,7 +27,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 def main():
-    print(f"Starting Drone Mission System in {MODE} mode...")
+    print(f"Starting Drone Mission System in {MODE} mode (Headless/No Preview)...")
     
     detector = FlagDetector()
     logger = DataLogger()
@@ -40,6 +40,10 @@ def main():
     if MODE == "LIVE":
         cap = cv2.VideoCapture(0) 
         telem = TelemetrySystem(mode="LIVE", port="/dev/ttyTHS1")
+    elif MODE == "VISION_ONLY":
+        # Desk Test Mode: Live Camera, Fake Telemetry
+        cap = cv2.VideoCapture(0) 
+        telem = TelemetrySystem(mode="MOCK")
     else:
         cap = cv2.VideoCapture("mock_data/test_video.mp4")
         telem = TelemetrySystem(mode="MOCK")
@@ -56,6 +60,7 @@ def main():
         ret, frame = cap.read()
         if not ret:
             if MODE == "MOCK":
+                print("End of mock video reached.")
                 break
             continue
             
@@ -98,20 +103,17 @@ def main():
                     target_data['target_lat'] = flag_lat
                     target_data['target_lon'] = flag_lon
                     
+                    # This still safely saves the image to your /data/frames/ folder!
                     logger.save_detection(frame, frame_timestamp, target_data)
                     print(f"[MISSION] NEW Target (ID: {track_id}) logged at {flag_lat:.6f}, {flag_lon:.6f}")
                     
                     # Add to our historical list so we don't log it again
                     logged_targets.append((flag_lat, flag_lon))
 
+        # We keep a tiny sleep in MOCK mode just so the video doesn't process 
+        # instantly and throw off the mock telemetry timestamps.
         if MODE == "MOCK":
-            cv2.imshow("Detection Preview", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
             time.sleep(0.03)
-
-    if MODE == "MOCK":
-        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
